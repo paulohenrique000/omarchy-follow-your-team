@@ -1,0 +1,4 @@
+# Editor and local runtime files
+*.swp
+*~
+.DS_Store

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.paulohenrique000.team-matches",
+  "name": "Team Matches",
+  "version": "1.0.0",
+  "author": "Paulo Henrique",
+  "license": "MIT",
+  "description": "Follow up to four teams with upcoming fixtures, recent results, and live scores.",
+  "kinds": ["bar-widget"],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Team matches",
+    "description": "Choose a sport and team, then follow its fixtures",
+    "category": "Info",
+    "allowMultiple": false
+  }
+}
