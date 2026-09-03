@@ -1,6 +1,8 @@
 # Team Matches
 
-An [Omarchy](https://omarchy.org/) bar widget for following up to four sports teams. It keeps the bar compact while a details panel provides recent results, the next three fixtures, live scores, team selection, and manual refresh.
+Keep your favourite teams right at the top bar. Follow up to four teams across different sports and quickly check their latest results and upcoming games.
+
+When it’s game time, Live Mode keeps you in the action with automatic score updates as the match unfolds.
 
 ![Add teams](assets/add_teams.png)
 
