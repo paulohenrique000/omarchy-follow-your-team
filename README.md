@@ -49,7 +49,7 @@ SofaScore does not publish these endpoints as a supported public API. They may c
 
 ## Security and privacy
 
-Plugins run inside the Omarchy shell with your user permissions. Team IDs are sent to `www.sofascore.com` and `api.sofascore.com` to retrieve fixture data and crests. The plugin runs `bash` and `curl` only for those HTTPS requests; it does not use `sudo`, install packages, or read secrets.
+Runs in the user shell and calls SofaScore via `bash`/`curl`.
 
 ## Development
 
