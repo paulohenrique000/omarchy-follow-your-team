@@ -20,7 +20,7 @@ When it’s game time, Live Mode keeps you in the action with automatic score up
 ## Install
 
 ```sh
-omarchy plugin add https://github.com/paulohenrique000/omarchy-team-matches.git --enable
+omarchy plugin add https://github.com/paulohenrique000/omarchy-follow-your-team.git --enable
 ```
 
 If you do not choose placement during installation, move it to the centre bar section:
