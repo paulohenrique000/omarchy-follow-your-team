@@ -1,4 +1,4 @@
-# Team Matches
+# Omarchy Follow Your Team
 
 Keep your favourite teams right at the top bar. Follow up to four teams across different sports and quickly check their latest results and upcoming games.
 
