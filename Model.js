@@ -75,6 +75,14 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;")
 }
 
+// SofaScore club colours are used only as QML colour values, never as markup.
+// Keep the accepted format deliberately small and anchored so malformed API
+// values cannot become styling or resource syntax elsewhere in the UI.
+function clubColor(value) {
+  var color = String(value || "")
+  return /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(color) ? color : ""
+}
+
 function relativeTime(timestamp, now) {
   var reference = now === undefined || now === null ? Date.now() / 1000 : Number(now)
   var seconds = Math.max(0, Math.round(Number(timestamp || 0) - reference))
@@ -165,7 +173,7 @@ function shortName(name) {
 if (typeof module !== "undefined") module.exports = {
   sports: sports, sportFor: sportFor, sportIcon: sportIcon, searchTeams: searchTeams,
   parseEvents: parseEvents, latestCompleted: latestCompleted, upcoming: upcoming,
-  score: score, opponent: opponent, isHome: isHome, escapeHtml: escapeHtml,
+  score: score, opponent: opponent, isHome: isHome, escapeHtml: escapeHtml, clubColor: clubColor,
   relativeTime: relativeTime, liveEvent: liveEvent, teamSummaries: teamSummaries,
   liveEventUpdates: liveEventUpdates, teamScore: teamScore, liveScore: liveScore,
   opponentScore: opponentScore, isRecentResult: isRecentResult,

@@ -107,6 +107,7 @@ BarWidget {
 
           Text {
             text: Model.sportIcon(String(modelData.sport || "")) + " " + Model.shortName(modelData.name)
+            textFormat: Text.PlainText
             color: root.bar ? root.bar.foreground : Color.foreground
             font.family: root.bar ? root.bar.fontFamily : Style.font.family
             font.pixelSize: Style.font.body
@@ -115,6 +116,7 @@ BarWidget {
           // Next-fixture time is deliberately visually secondary.
           Text {
             text: root.fixtureText(modelData)
+            textFormat: Text.PlainText
             color: root.teamIsLive(modelData) ? Color.urgent : (root.teamHasRecentResult(modelData) ? (root.bar ? root.bar.foreground : Color.foreground) : Qt.darker(root.bar ? root.bar.foreground : Color.foreground, 1.4))
             font.family: root.bar ? root.bar.fontFamily : Style.font.family
             font.pixelSize: (root.teamIsLive(modelData) || root.teamHasRecentResult(modelData)) ? Style.font.body : Style.font.caption

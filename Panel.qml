@@ -58,6 +58,72 @@ Panel {
       + (nextCountdown !== "" ? " · " + nextCountdown : (lastMatch ? " " + Model.score(lastMatch, "home") + "–" + Model.score(lastMatch, "away") : ""))
     : "\uf1e3 Teams"
 
+  component TeamName: Row {
+    required property var team
+    property color nameColor: root.foreground
+    property string textFontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+    property int textFontSize: Style.font.body
+    spacing: Style.space(4)
+    Rectangle {
+      visible: Model.clubColor(team && team.teamColors && team.teamColors.primary) !== ""
+      width: visible ? Style.space(8) : 0
+      height: width
+      radius: width / 2
+      anchors.verticalCenter: parent.verticalCenter
+      color: Model.clubColor(team && team.teamColors && team.teamColors.primary)
+    }
+    Text {
+      text: String(team && team.name || "")
+      textFormat: Text.PlainText
+      color: parent.nameColor
+      font.family: parent.textFontFamily
+      font.pixelSize: parent.textFontSize
+      elide: Text.ElideRight
+    }
+  }
+
+  component EventLine: Row {
+    required property var event
+    property bool includeScore: false
+    property string textFontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+    property int textFontSize: Style.font.body
+    width: parent ? parent.width : implicitWidth
+    spacing: Style.space(5)
+    TeamName {
+      team: event && event.homeTeam
+      nameColor: Number(team && team.id) === root.teamId ? Color.accent : root.foreground
+      textFontFamily: parent.textFontFamily
+      textFontSize: parent.textFontSize
+    }
+    Text {
+      text: includeScore ? Model.score(event, "home") + "  ·  " + Model.score(event, "away") : "vs"
+      textFormat: Text.PlainText
+      color: root.foreground
+      font.family: parent.textFontFamily
+      font.pixelSize: parent.textFontSize
+      font.bold: true
+    }
+    TeamName {
+      team: event && event.awayTeam
+      nameColor: Number(team && team.id) === root.teamId ? Color.accent : root.foreground
+      textFontFamily: parent.textFontFamily
+      textFontSize: parent.textFontSize
+    }
+  }
+
+  component EventMeta: Row {
+    required property var event
+    property bool showRelativeTime: root.nextMatches.length > 0 && Number(event && event.id) === Number(root.nextMatches[0].id)
+    spacing: Style.space(5)
+    readonly property string competition: event && event.tournament ? String(event.tournament.name || "") : ""
+    readonly property string when: event && event.startTimestamp ? Qt.formatDateTime(new Date(event.startTimestamp * 1000), "ddd d MMM · HH:mm") : "Date pending"
+    Text { visible: parent.competition !== ""; text: parent.competition; textFormat: Text.PlainText; color: Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
+    Text { visible: parent.competition !== ""; text: "·"; textFormat: Text.PlainText; color: Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
+    Text { text: parent.when; textFormat: Text.PlainText; color: Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
+    Text { visible: parent.showRelativeTime; text: "·"; textFormat: Text.PlainText; color: Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
+    Text { visible: parent.showRelativeTime; text: Model.relativeTime(event && event.startTimestamp, now.getTime() / 1000); textFormat: Text.PlainText; color: Color.accent; font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
+  }
+
   function persistSettings(values) {
     var entry = { id: root.moduleName }
     for (var key in settings) if (key !== "id") entry[key] = settings[key]
@@ -95,7 +161,7 @@ Panel {
     requestedQuery = query
     searching = true
     errorText = ""
-    searchProc.command = ["curl", "-fsS", "--max-time", "8",
+    searchProc.command = ["curl", "-fsS", "--max-time", "8", "--max-filesize", "262144",
                           "https://www.sofascore.com/api/v1/search/teams?q=" + encodeURIComponent(query)]
     searchProc.running = true
   }
@@ -180,7 +246,7 @@ Panel {
     if (configuredTeams.length === 0 || summaryProc.running) return
     var ids = configuredTeams.map(function(team) { return Number(team.id) }).filter(function(id) { return id > 0 })
     if (ids.length === 0) return
-    summaryProc.command = ["bash", "-c", "for id in " + ids.join(" ") + "; do printf '%s\\t' \"$id\"; curl -fsS --max-time 8 \"https://www.sofascore.com/api/v1/team/$id/events/last/0\"; printf '\\t'; curl -fsS --max-time 8 \"https://www.sofascore.com/api/v1/team/$id/events/next/0\"; printf '\\n'; done"]
+    summaryProc.command = ["bash", "-c", "for id in " + ids.join(" ") + "; do printf '%s\\t' \"$id\"; curl -fsS --max-time 8 --max-filesize 262144 \"https://www.sofascore.com/api/v1/team/$id/events/last/0\"; printf '\\t'; curl -fsS --max-time 8 --max-filesize 262144 \"https://www.sofascore.com/api/v1/team/$id/events/next/0\"; printf '\\n'; done"]
     summaryProc.running = true
   }
 
@@ -192,7 +258,7 @@ Panel {
       if (live && Number(live.id || 0) > 0) pairs.push(Number(id) + ":" + Number(live.id))
     }
     if (pairs.length === 0) return
-    liveProc.command = ["bash", "-c", "for pair in " + pairs.join(" ") + "; do team=${pair%%:*}; event=${pair#*:}; printf '%s\\t' \"$team\"; curl -fsS --max-time 8 \"https://www.sofascore.com/api/v1/event/$event\"; printf '\\n'; done"]
+    liveProc.command = ["bash", "-c", "for pair in " + pairs.join(" ") + "; do team=${pair%%:*}; event=${pair#*:}; printf '%s\\t' \"$team\"; curl -fsS --max-time 8 --max-filesize 262144 \"https://www.sofascore.com/api/v1/event/$event\"; printf '\\n'; done"]
     liveProc.running = true
   }
 
@@ -208,37 +274,6 @@ Panel {
   function open() { root.controller.show(); if (teamId > 0) root.refresh(); root.refreshTeamSummaries() }
   function close() { root.controller.hide() }
   function toggle() { if (root.opened) root.close(); else root.open() }
-
-  function teamMarkup(team) {
-    var name = Model.escapeHtml(team && team.name)
-    var clubColor = team && team.teamColors && team.teamColors.primary
-    var marker = clubColor ? "<span style=\"color:" + String(clubColor) + ";\">●</span> " : ""
-    // Full names use the theme foreground. The selected team alone uses the
-    // theme accent, while the club colour is limited to the small marker.
-    if (Number(team && team.id) === teamId)
-      name = "<span style=\"color:" + themeAccent + ";\">" + name + "</span>"
-    return marker + name
-  }
-
-  function eventLine(event, includeScore) {
-    if (!event) return "No match data"
-    var home = teamMarkup(event.homeTeam)
-    var away = teamMarkup(event.awayTeam)
-    // Scores deliberately stay outside the team-coloured spans, inheriting
-    // the active Omarchy theme foreground (white in the current theme).
-    if (includeScore) return home + " " + Model.score(event, "home") + "  ·  " + Model.score(event, "away") + " " + away
-    return home + "  vs  " + away
-  }
-
-  function eventMeta(event) {
-    if (!event) return ""
-    var when = event.startTimestamp ? Qt.formatDateTime(new Date(event.startTimestamp * 1000), "ddd d MMM · HH:mm") : "Date pending"
-    var competition = event.tournament ? String(event.tournament.name || "") : ""
-    var meta = competition ? competition + "  ·  " + when : when
-    if (nextMatches.length > 0 && Number(event.id) === Number(nextMatches[0].id))
-      meta += "  ·  <span style=\"color:" + themeAccent + ";\">" + Model.relativeTime(event.startTimestamp, now.getTime() / 1000) + "</span>"
-    return meta
-  }
 
   function finishRefresh() {
     Qt.callLater(function() {
@@ -304,7 +339,7 @@ Panel {
 
   Process {
     id: lastProc
-    command: ["curl", "-fsS", "--max-time", "8", "https://www.sofascore.com/api/v1/team/" + root.teamId + "/events/last/0"]
+    command: ["curl", "-fsS", "--max-time", "8", "--max-filesize", "262144", "https://www.sofascore.com/api/v1/team/" + root.teamId + "/events/last/0"]
     stdout: StdioCollector {
       waitForEnd: true
       onStreamFinished: {
@@ -326,7 +361,7 @@ Panel {
 
   Process {
     id: nextProc
-    command: ["curl", "-fsS", "--max-time", "8", "https://www.sofascore.com/api/v1/team/" + root.teamId + "/events/next/0"]
+    command: ["curl", "-fsS", "--max-time", "8", "--max-filesize", "262144", "https://www.sofascore.com/api/v1/team/" + root.teamId + "/events/next/0"]
     stdout: StdioCollector {
       waitForEnd: true
       onStreamFinished: {
@@ -412,6 +447,7 @@ Panel {
               }
               Text {
                 text: Model.shortName(modelData.name)
+                textFormat: Text.PlainText
                 color: root.foreground
                 font.family: root.bar ? root.bar.fontFamily : Style.font.family
                 font.pixelSize: Style.font.body
@@ -499,8 +535,8 @@ Panel {
             radius: Style.cornerRadius
             color: resultArea.containsMouse ? Style.hoverFillFor(root.foreground, Color.accent) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.05)
             Column { anchors.left: parent.left; anchors.right: parent.right; anchors.leftMargin: Style.space(9); anchors.rightMargin: Style.space(9); anchors.verticalCenter: parent.verticalCenter; spacing: 1
-              Text { text: String(modelData.name || ""); color: root.foreground; font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.body; elide: Text.ElideRight; width: parent.width }
-              Text { text: String(modelData.country && modelData.country.name || ""); color: Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; elide: Text.ElideRight; width: parent.width }
+              Text { text: String(modelData.name || ""); textFormat: Text.PlainText; color: root.foreground; font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.body; elide: Text.ElideRight; width: parent.width }
+              Text { text: String(modelData.country && modelData.country.name || ""); textFormat: Text.PlainText; color: Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; elide: Text.ElideRight; width: parent.width }
             }
             MouseArea { id: resultArea; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.chooseTeam(modelData) }
           }
@@ -511,16 +547,16 @@ Panel {
         visible: teamId > 0 && !addingTeam
         width: parent.width
         spacing: Style.space(6)
-        Text { text: refreshing ? "UPDATING" : (liveMatch ? "● LIVE · " + String(liveMatch.status && liveMatch.status.description || "").toUpperCase() : "LAST RESULT"); color: liveMatch ? Color.urgent : Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true; font.letterSpacing: 1 }
-        Text { text: root.eventLine(liveMatch || lastMatch, true); textFormat: Text.RichText; width: parent.width; color: root.foreground; font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.body; font.bold: true; wrapMode: Text.WordWrap }
-        Text { visible: liveMatch !== null || lastMatch !== null; text: root.eventMeta(liveMatch || lastMatch); textFormat: Text.RichText; color: Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
+        Text { text: refreshing ? "UPDATING" : (liveMatch ? "● LIVE · " + String(liveMatch.status && liveMatch.status.description || "").toUpperCase() : "LAST RESULT"); textFormat: Text.PlainText; color: liveMatch ? Color.urgent : Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true; font.letterSpacing: 1 }
+        EventLine { event: liveMatch || lastMatch; includeScore: true; width: parent.width; visible: event !== null }
+        EventMeta { event: liveMatch || lastMatch; visible: event !== null }
         Rectangle { width: parent.width; height: 1; color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.12) }
         Text { text: "NEXT GAMES"; color: Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption; font.bold: true; font.letterSpacing: 1 }
         Repeater {
           model: root.nextMatches
           delegate: Column { required property var modelData; width: parent.width; spacing: 1
-            Text { text: root.eventLine(modelData, false); textFormat: Text.RichText; width: parent.width; color: root.foreground; font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.body; elide: Text.ElideRight }
-            Text { text: root.eventMeta(modelData); textFormat: Text.RichText; color: Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
+            EventLine { event: modelData; width: parent.width }
+            EventMeta { event: modelData }
           }
         }
       }
@@ -557,6 +593,42 @@ Panel {
           size: Style.space(20)
           enabled: !root.refreshing
           onClicked: root.refresh()
+        }
+
+        Item {
+          id: removeButton
+          anchors.right: refreshButton.left
+          anchors.rightMargin: Style.space(4)
+          anchors.verticalCenter: parent.verticalCenter
+          width: Style.space(20)
+          height: width
+
+          Text {
+            anchors.centerIn: parent
+            text: "×"
+            textFormat: Text.PlainText
+            color: removeArea.containsMouse ? Color.urgent : Qt.darker(root.foreground, 1.55)
+            font.family: root.bar ? root.bar.fontFamily : Style.font.family
+            font.pixelSize: Style.font.body
+          }
+          MouseArea {
+            id: removeArea
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.removeActiveTeam()
+          }
+          Text {
+            visible: removeArea.containsMouse
+            anchors.right: parent.left
+            anchors.rightMargin: Style.space(6)
+            anchors.verticalCenter: parent.verticalCenter
+            text: "Remove team"
+            textFormat: Text.PlainText
+            color: root.foreground
+            font.family: root.bar ? root.bar.fontFamily : Style.font.family
+            font.pixelSize: Style.font.caption
+          }
         }
       }
 
