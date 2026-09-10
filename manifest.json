@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.paulohenrique000.team-matches",
   "name": "Omarchy Follow Your Team ",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Paulo Henrique",
   "license": "MIT",
   "description": "Follow up to four teams with upcoming fixtures, recent results, and live scores.",
