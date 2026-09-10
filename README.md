@@ -10,7 +10,7 @@ When it’s game time, Live Mode keeps you in the action with automatic score up
 
 ## Features
 
-- Follow up to four teams across football, basketball, American football, baseball, hockey, volleyball, cricket, and rugby.
+- Follow up to four teams across football (soccer), basketball, American football (NFL), baseball, hockey, volleyball, cricket, and rugby.
 - Search teams after selecting a sport; selected teams are saved in the bar configuration.
 - Show every followed team in the bar, including a smaller next-fixture countdown.
 - Show live scores and period/status in the bar; retain a finished score for eight hours.

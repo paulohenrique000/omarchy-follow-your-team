@@ -1,7 +1,7 @@
 var sports = [
   { slug: "football", name: "Football", icon: "󰒸" },
   { slug: "basketball", name: "Basketball", icon: "󰠆" },
-  { slug: "american-football", name: "American football", icon: "󰉝" },
+  { slug: "american-football", name: "American football (NFL)", icon: "󰉝" },
   { slug: "baseball", name: "Baseball", icon: "󰡒" },
   { slug: "ice-hockey", name: "Hockey", icon: "󰡺" },
   { slug: "volleyball", name: "Volleyball", icon: "󰦴" },
@@ -89,7 +89,8 @@ function relativeTime(timestamp, now) {
   if (seconds < 90) return "in 1 min"
   if (seconds < 3600) return "in " + Math.round(seconds / 60) + " min"
   if (seconds < 86400) return "in " + Math.round(seconds / 3600) + "h"
-  return "in " + Math.round(seconds / 86400) + " days"
+  var days = Math.round(seconds / 86400)
+  return "in " + days + (days === 1 ? " day" : " days")
 }
 
 function liveEvent(events) {

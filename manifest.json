@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "io.github.paulohenrique000.team-matches",
-  "name": "Team Matches",
+  "name": "Omarchy Follow Your Team ",
   "version": "1.0.0",
   "author": "Paulo Henrique",
   "license": "MIT",
@@ -11,8 +11,8 @@
     "barWidget": "BarWidget.qml"
   },
   "barWidget": {
-    "displayName": "Team matches",
-    "description": "Choose a sport and team, then follow its fixtures",
+    "displayName": "Follow Your Team",
+    "description": "Keep your favourite teams right at the top bar. Follow up to four teams across different sports and quickly check their latest results and upcoming games. When it’s game time, Live Mode keeps you in the action with automatic score updates as the match unfolds. Supports football (soccer), basketball, American football (NFL), baseball, hockey, volleyball, cricket, and rugby.",
     "category": "Info",
     "allowMultiple": false
   }

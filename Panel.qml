@@ -111,17 +111,32 @@ Panel {
     }
   }
 
-  component EventMeta: Row {
+  component MetaText: Text {
+    width: Math.min(implicitWidth, parent.width)
+    wrapMode: Text.Wrap
+    textFormat: Text.PlainText
+    color: Qt.darker(root.foreground, 1.4)
+    font.family: root.bar ? root.bar.fontFamily : Style.font.family
+    font.pixelSize: Style.font.caption
+  }
+
+  component EventMeta: Flow {
     required property var event
     property bool showRelativeTime: root.nextMatches.length > 0 && Number(event && event.id) === Number(root.nextMatches[0].id)
+    width: parent ? parent.width : implicitWidth
     spacing: Style.space(5)
     readonly property string competition: event && event.tournament ? String(event.tournament.name || "") : ""
     readonly property string when: event && event.startTimestamp ? Qt.formatDateTime(new Date(event.startTimestamp * 1000), "ddd d MMM · HH:mm") : "Date pending"
-    Text { visible: parent.competition !== ""; text: parent.competition; textFormat: Text.PlainText; color: Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
-    Text { visible: parent.competition !== ""; text: "·"; textFormat: Text.PlainText; color: Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
-    Text { text: parent.when; textFormat: Text.PlainText; color: Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
-    Text { visible: parent.showRelativeTime; text: "·"; textFormat: Text.PlainText; color: Qt.darker(root.foreground, 1.4); font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
-    Text { visible: parent.showRelativeTime; text: Model.relativeTime(event && event.startTimestamp, now.getTime() / 1000); textFormat: Text.PlainText; color: Color.accent; font.family: root.bar ? root.bar.fontFamily : Style.font.family; font.pixelSize: Style.font.caption }
+
+    // Flow moves whole fields to the next line; unusually long fields can
+    // also wrap within the panel instead of overflowing its edge.
+    MetaText { visible: parent.competition !== ""; text: parent.competition }
+    MetaText { text: (parent.competition !== "" ? "·\u00a0" : "") + parent.when }
+    MetaText {
+      visible: parent.showRelativeTime
+      text: Model.relativeTime(event && event.startTimestamp, now.getTime() / 1000)
+      color: Color.accent
+    }
   }
 
   function persistSettings(values) {
